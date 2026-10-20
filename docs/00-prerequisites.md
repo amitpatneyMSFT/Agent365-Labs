@@ -12,8 +12,8 @@ Every SDK lab in this repository requires the same three things: tools on your m
 
 | Requirement | Minimum | Check it with | What needs it |
 | --- | --- | --- | --- |
-| .NET SDK | 8.0 | `dotnet --version` | The Agent 365 CLI itself, and .NET agents |
-| Agent 365 CLI | latest | `a365 --version` | Every SDK lab |
+| .NET SDK | 8.0 or later | `dotnet --version` | The Agent 365 CLI itself, and .NET agents |
+| Agent 365 CLI | latest | `a365 -h` | Every SDK lab |
 | PowerShell | 7.0 | `pwsh --version` | The consent scripts |
 | Azure CLI | latest | `az version` | Signing in to the tenant |
 | Az PowerShell module | latest | `Get-Module -ListAvailable Az.Accounts` | Granting permissions |
@@ -22,16 +22,45 @@ Every SDK lab in this repository requires the same three things: tools on your m
 | uv | latest | `uv --version` | Optional Python lab only |
 | Node.js | 20.10 | `node --version` | Optional JavaScript / Node.js lab only |
 
-> The .NET 8 SDK is required even if your agent is written in Python or TypeScript. The Agent 365 CLI is distributed as a .NET global tool, so .NET must be installed to run it. This is unrelated to the language your agent is written in. This requirement is for the **SDK labs** only; Lab A365-01 does not use the CLI.
+> The Agent 365 CLI requires .NET 8.0 or later, even if your agent is written in Python or TypeScript. It is distributed as a .NET global tool; the main .NET lab targets .NET 8. This requirement is for the **SDK labs** only; Lab A365-01 does not use the CLI.
 
-A key requirement for the labs is the Agent 365 CLI, which you can install with the following command:
+### Install or update the Agent 365 CLI
 
-```bash
-dotnet tool install --global Microsoft.Agents365.CLI
-a365 --version
+Install the **`Microsoft.Agents.A365.DevTools.Cli`** package to use the `a365` command. See [Install and use the Agent 365 CLI](https://learn.microsoft.com/microsoft-agent-365/developer/agent-365-cli?tabs=windows) for the CLI reference.
+
+Open PowerShell and run `dotnet tool list --global`. If `Microsoft.Agents.A365.DevTools.Cli` is listed, use the update command below. Otherwise, use the installation command. Package IDs may appear in lowercase.
+
+**First installation**
+
+```powershell
+dotnet tool install --global Microsoft.Agents.A365.DevTools.Cli
 ```
 
-The second command prints the installed version.
+**Update an existing installation**
+
+```powershell
+dotnet tool update --global Microsoft.Agents.A365.DevTools.Cli
+```
+
+**If installation reports an `a365` command conflict**
+
+Check `dotnet tool list --global`. If `Microsoft.Agents365.CLI` is listed, run the following commands to replace it with `Microsoft.Agents.A365.DevTools.Cli`:
+
+```powershell
+dotnet tool uninstall --global Microsoft.Agents365.CLI
+dotnet tool install --global Microsoft.Agents.A365.DevTools.Cli
+```
+
+Use your organization's configured package feeds. If the package is unavailable, ask your administrator to make it available.
+
+**Verify the installation**
+
+```powershell
+dotnet tool list --global
+a365 -h
+```
+
+Confirm the tool list contains `Microsoft.Agents.A365.DevTools.Cli` and that `a365 -h` displays help. If Windows cannot find `a365`, open a new terminal and check that `%USERPROFILE%\.dotnet\tools` is on your `PATH`.
 
 ## Installing the Agent 365 Skills
 
@@ -90,12 +119,104 @@ You can bring your own agent instead. The SDK labs assume two things about it: i
 
 ## An Azure OpenAI resource for the SDK labs
 
-The agent reasons with a model deployed in Azure OpenAI, so you need a resource with a chat deployment on it. Note down two values from the Azure portal, on the resource:
+The SDK agents call an **Azure OpenAI model deployed in Microsoft Foundry**. You will create a **Foundry project**, which is your workspace in the portal, and a **Foundry resource**, which holds the model deployments, endpoint, and access settings. A model deployment makes a particular model available for your agent to call.
 
-1. The **endpoint**, under **Resource Management** and then **Keys and Endpoint**.
-2. The **deployment name**, under **Model deployments**.
+These instructions use the **new Microsoft Foundry portal**. You will create a project, deploy a chat model, test it, and collect the connection settings for the labs. If your facilitator provides a project and deployment, start at Step 4.
 
-Also note the id of the tenant that owns that resource. Without it, the credential returns a token from whichever tenant you last signed in to, and Azure OpenAI responds with `HTTP 400` and `Tenant provided in token does not match resource token`.
+> **Costs:** model calls, including playground tests, incur Azure charges. A Microsoft 365 or Agent 365 licence does not include Azure OpenAI usage. Use a subscription approved for the lab and review [Azure OpenAI pricing](https://azure.microsoft.com/pricing/details/cognitive-services/openai-service/) before deploying.
+
+### Step 1: Sign in and check your Azure subscription
+
+1. Open the [Azure portal](https://portal.azure.com) and sign in with the account you will use for the lab.
+2. Search for **Subscriptions** in the search bar at the top of the portal and open it.
+3. Select the subscription approved for the lab. Confirm its status is **Active**. If no subscription is listed, ask your Azure administrator or facilitator for access before continuing.
+4. Record the subscription name and **Subscription ID**.
+5. Ask your administrator to confirm you have permission to create a Foundry resource and project in the target **resource group**, which is a container for related Azure resources. **Foundry Owner** or **Foundry Account Owner** on the resource group provides resource-creation permissions. Creating a new resource group also requires permission at subscription level. See [Foundry project prerequisites](https://learn.microsoft.com/azure/foundry/how-to/create-projects#prerequisites).
+
+Your administrator can create the project and deployment for you if you do not have these permissions. Azure resource permissions are separate from the Microsoft Entra roles used to register agents later in the lab.
+
+### Step 2: Create a Foundry project and resource
+
+Use these Azure settings when creating your project:
+
+| Field | What to enter |
+| --- | --- |
+| **Subscription** | The subscription you checked in Step 1 |
+| **Resource group** | Select the group provided by your facilitator, or allow the portal to create a dedicated group for this lab |
+| **Location** | An organization-approved region that supports `gpt-4.1`; check [model availability by region](https://learn.microsoft.com/azure/foundry/foundry-models/concepts/models-sold-directly-by-azure-region-availability) |
+
+1. Open [Microsoft Foundry](https://ai.azure.com) and sign in with the same account.
+2. Turn the **New Foundry** toggle **On**.
+3. Open the project selector in the upper-left corner and select **Create new project**. If your first sign-in already shows the project creation form, continue with that form.
+4. Enter `agent365-labs-ab` as the project name, replacing `ab` with your initials.
+5. Expand **Advanced options** and enter the Azure settings from the table above.
+6. Select **Create** or **Create project**, as shown in the form. Foundry creates the project and its parent Foundry resource.
+7. Wait for creation to finish. Confirm `agent365-labs-ab` appears in the project selector.
+
+If your organization requires private networking, specific resource names, or mandatory tags, ask your administrator to prepare a compliant project using the [Foundry project setup guide](https://learn.microsoft.com/azure/foundry/how-to/create-projects). Confirm your lab machine can reach its model endpoint before continuing.
+
+**Checkpoint:** your project opens in the new Foundry portal. You have a workspace and resource; deploy the model next.
+
+### Step 3: Deploy a chat model
+
+1. In Foundry, confirm your lab project is selected.
+2. Select **Discover** in the upper-right navigation, then **Models** in the left pane.
+3. Search for **gpt-4.1** and open its model card. This Azure OpenAI chat model supports the tool calls used by the sample agents. If it is unavailable, ask your facilitator for an approved chat model with tool-calling support.
+4. Select **Deploy** > **Custom settings**.
+5. Confirm the deployment targets your lab project's Foundry resource.
+6. Enter `gpt-4.1` as the **Deployment name**. This is the name you will put in the sample's configuration.
+7. Select **Global Standard** as the **Deployment type** if your organization permits global processing. If it requires regional processing, ask your administrator which available deployment type to use. Use a pay-per-token deployment for this lab; batch deployments cannot serve the interactive chat.
+8. Set **Tokens per Minute Rate Limit** to **10,000** for a single learner, if that quota is available. For a shared deployment, use the capacity provided by your facilitator.
+9. Select **Deploy**. When deployment completes, Foundry opens the model playground.
+10. Select **Build** in the upper-right navigation, then **Models** in the left pane. Confirm the deployment is listed with status **Succeeded**.
+
+If deployment is blocked by insufficient quota, ask your administrator to allocate quota or provide a deployment in an approved region. Creating or editing a model deployment requires **Cognitive Services Contributor** or equivalent permissions on the Foundry resource. See [Deploy models in the Foundry portal](https://learn.microsoft.com/azure/foundry/foundry-models/how-to/deploy-foundry-models).
+
+### Step 4: Collect the connection settings
+
+1. In Foundry, select the project provided by your facilitator or the one you created.
+2. Select **Build** > **Models**, then open your `gpt-4.1` deployment.
+3. Copy the **Deployment name** exactly. Open the **Code** tab and locate the Azure OpenAI endpoint in the connection example.
+4. Record the resource's **Azure OpenAI base endpoint**, in the form `https://<resource-name>.openai.azure.com/`. If the example shows `https://<resource-name>.openai.azure.com/openai/v1/`, keep only `https://<resource-name>.openai.azure.com/` for these samples. They add the API path themselves. See [Foundry model endpoints](https://learn.microsoft.com/azure/foundry/foundry-models/concepts/endpoints#azure-openai-inference-endpoint).
+5. In the [Azure portal](https://portal.azure.com), open the Foundry resource that owns this deployment. Record its resource name and resource group; you will use them for the access assignment in Step 5.
+6. Open **Microsoft Entra ID** > **Overview** and copy **Tenant ID**. Confirm the directory is the one that owns the Azure subscription used above.
+7. Keep the three connection settings in the table below for Exercise 1 of your chosen SDK lab.
+
+| Setting | Example | Used in the samples |
+| --- | --- | --- |
+| Azure OpenAI endpoint | `https://<resource-name>.openai.azure.com/` | .NET: `AzureOpenAI:Endpoint`; Python/Node.js: `AZURE_OPENAI_ENDPOINT` |
+| Deployment name | `gpt-4.1` | .NET: `AzureOpenAI:Deployment`; Python/Node.js: `AZURE_OPENAI_DEPLOYMENT` |
+| Tenant ID | The directory's GUID | .NET: `AzureOpenAI:TenantId`; Python/Node.js: `AZURE_OPENAI_TENANT_ID` |
+
+The lab samples use the **Azure OpenAI base endpoint**, not the Foundry project endpoint ending in `/api/projects/<project-name>`. Use the **deployment name** in configuration, even if you chose a name different from the underlying model.
+
+### Step 5: Grant your account access to call the model
+
+The labs recommend signing in with Microsoft Entra credentials instead of storing an API key. The samples call the Azure OpenAI API, so your signed-in account needs **Cognitive Services OpenAI User**, or another role that includes that API's Entra inference access, on the **parent Foundry resource**. Project access and permission to create resources alone do not grant this resource-level model access.
+
+Ask an administrator who can assign Azure roles, such as an **Owner**, **User Access Administrator**, or **Role Based Access Control Administrator** at the resource scope, to complete these steps:
+
+1. In the Azure portal, open the Foundry resource you recorded in Step 4.
+2. Select **Access control (IAM)** > **Add** > **Add role assignment**.
+3. Search for and select **Cognitive Services OpenAI User**, then select **Next**.
+4. Under **Assign access to**, select **User, group, or service principal**.
+5. Select **Select members**, find the account you will use for the SDK lab, select it, and confirm the selection.
+6. Select **Review + assign** to finish the assignment.
+
+Allow a few minutes for the role to take effect. See the [Cognitive Services OpenAI User role](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/ai-machine-learning#cognitive-services-openai-user) if an administrator needs to check your existing access.
+
+If your facilitator requires API-key authentication, use the resource key available in the deployment's connection details. The SDK lab explains how to configure it outside committed files. Keep keys out of source control, screenshots, and lab notes shared with others.
+
+### Step 6: Test the deployment
+
+1. In Foundry, select your lab project.
+2. Select **Build** > **Models**, then select your deployment to open its playground.
+3. Confirm the selected deployment is the one you recorded, then send: `Reply with one sentence explaining what Azure OpenAI is.`
+4. Confirm a text response appears. If access is denied, check your role assignment and the resource's network settings with your administrator. If a rate-limit or quota error appears, wait and retry, then ask your facilitator to review capacity if it persists.
+
+The playground test checks that the deployment responds. Exercise 1 of the SDK lab will check the connection from your local application using the endpoint, deployment name, and tenant ID you collected.
+
+**Checkpoint:** the model deployment has succeeded, it answers in the chat playground, you have recorded all three connection settings, and your lab account has model access.
 
 ## Next steps
 

@@ -12,7 +12,7 @@ You are building a Microsoft documentation assistant in Copilot Studio. It searc
 
 Copilot Studio [automatically sends telemetry to Microsoft Agent 365](https://learn.microsoft.com/microsoft-agent-365/builder/observability). You do not add an SDK or exporter, register the agent with the Agent 365 CLI, or manage tokens for telemetry. The runtime records agent invocations, tool calls, and responses as `invoke_agent`, `execute_tool`, and `output_messages` spans.
 
-In this lab you use the **GitHub Copilot harness inside Copilot Studio**, add the certified Microsoft Learn Docs MCP Server connector, and create a native skill in the builder that tells the agent how to research a question. You then run an authenticated Preview conversation and find the resulting activity in the Microsoft 365 admin center and Microsoft Defender.
+In this lab you use the **GitHub Copilot harness inside Copilot Studio**, add the Microsoft Learn MCP server, and create a native skill in the builder that tells the agent how to research a question. You then run an authenticated Preview conversation and find the resulting activity in the Microsoft 365 admin center and Microsoft Defender.
 
 ## Lab objectives
 
@@ -37,7 +37,7 @@ You need a browser. You do not need the GitHub Copilot CLI, Agent 365 CLI, PAC, 
 | Copilot Studio | You have authoring access in the chosen environment, with [Copilot Credits capacity](https://learn.microsoft.com/power-platform/admin/manage-usage-github-copilot-harness). Building, testing, evaluating, and running agents on this harness can consume credits; a Microsoft 365 Copilot user licence alone does not cover that capacity. |
 | Feature availability | The chosen environment exposes the GitHub Copilot harness, including **Build**, **Preview**, **Tools**, and **Skills**. Confirm availability in your tenant and region before starting. |
 | Portal access | You or your facilitator can open the Microsoft 365 admin center and Defender with the roles and licences needed to inspect agent activity. |
-| Defender setup | An administrator has completed the connector setup below. Purview auditing is enabled. |
+| Defender setup | An administrator has completed the connector setup below. Purview auditing is enabled, and at least one Microsoft 365 licence is assigned in the tenant for the Microsoft 365 connector. |
 
 The [observability licence requirement](https://learn.microsoft.com/microsoft-agent-365/developer/observability-concepts#limits-and-drop-conditions) concerns tenant ingestion. The person opening licensed Activity features also needs the applicable viewer entitlement. Confirm both with your administrator.
 
@@ -48,6 +48,7 @@ The [observability licence requirement](https://learn.microsoft.com/microsoft-ag
 | Copilot Studio authoring | Environment maker or equivalent maker permissions |
 | Microsoft 365 admin center agent views | **AI Reader**, **Security Reader**, **Reports Reader**, or higher; **AI Administrator** or **Global Administrator** for management actions |
 | Defender setup | **Security Administrator** or higher |
+| Enable Purview auditing, if disabled | **Audit Logs** role in Exchange Online, included by default in **Compliance Management** and **Organization Management** |
 | Defender Advanced Hunting | **Security Reader** or equivalent RBAC access to the relevant data |
 | Optional Copilot Studio real-time protection setup | **Security Administrator** or higher in Entra, plus a **Power Platform Administrator** collaborator |
 
@@ -55,31 +56,115 @@ See [admin-center agent roles](https://learn.microsoft.com/microsoft-365/admin/m
 
 ### Required Defender and audit setup
 
-Ask your security administrator to complete this [Defender onboarding](https://learn.microsoft.com/defender-xdr/security-for-ai/get-started-defender-security-for-ai) before the lab:
+There are two separate integrations. Complete the first before the lab; the second is optional.
 
-1. Confirm [Purview auditing is enabled](https://learn.microsoft.com/purview/audit-log-enable-disable).
-2. In <https://security.microsoft.com>, go to **Settings** > **Security for AI** > **Get started**.
-3. Confirm **Agent 365** is marked **Done**.
-4. Confirm the **Enable** toggle is **On**.
+| Integration | Purpose | Required for this lab? |
+| --- | --- | --- |
+| **Microsoft 365 connector** in Defender | Collects activity for investigation and Advanced Hunting | **Yes**, for the Defender exercises |
+| **Copilot Studio real-time protection** | Sends proposed tool invocations to a threat-detection provider; enforcement depends on the configured rules | **No** |
+
+Ask your security administrator to complete this [Defender onboarding](https://learn.microsoft.com/defender-xdr/security-for-ai/get-started-defender-security-for-ai#connect-data-sources) in the **same tenant** as the lab environment:
+
+1. In <https://purview.microsoft.com>, open **Audit**. If it is not visible, use **View all solutions** > **Core** > **Audit**. If a **Start recording user and admin activity** banner appears, ask an administrator with the Exchange Online role above to select it. Follow [the audit setup instructions](https://learn.microsoft.com/purview/audit-log-enable-disable); Security Administrator alone does not grant permission to enable auditing.
+2. In <https://security.microsoft.com>, open **Settings** > **Security for AI** > **Get started**.
+3. Confirm **Agent 365** is marked **Done**. This happens automatically after Agent 365 onboarding. If it is not done, ask your administrator to complete tenant onboarding and confirm licensing before continuing.
+4. Confirm the **Enable** toggle is **On**. It is normally on by default after onboarding.
 5. Select the **Microsoft 365 connector** step.
-6. On the component selection step, select **Microsoft Entra ID Management events** and **Microsoft 365 activities**.
-7. Keep **Microsoft Entra Users and groups** selected by default, and keep any other already-selected components in place.
-8. Select **Connect Microsoft 365**.
-9. Confirm the connector status becomes **Connected**.
+6. On **Select Microsoft 365 components**, select **Microsoft Entra ID Management events** and **Microsoft 365 activities**.
+7. Keep **Microsoft Entra Users and groups** selected. It is selected by default and is a monitoring prerequisite. Leave any other selected components unchanged.
+8. Select **Connect Microsoft 365** and complete the wizard. If the full connector wizard opens, follow its **Connect**, **Follow the link**, and **Done** prompts as described in [Connect Microsoft 365 to Defender for Cloud Apps](https://learn.microsoft.com/defender-cloud-apps/protect-office-365#connect-microsoft-365-to-microsoft-defender-for-cloud-apps).
+9. Return to **Security for AI** > **Get started** and confirm **Microsoft 365 connector** is **Connected**. If a connector already exists, review it under **Settings** > **Cloud Apps** > **Connected apps** > **App Connectors** rather than creating a duplicate.
 
-The Microsoft 365 connector enables investigation and Advanced Hunting. Allow several minutes for telemetry to index; new connections, licence assignments, inventory updates, and dashboard metrics can take longer.
+**Checkpoint:** auditing is enabled, **Agent 365** is **Done**, **Enable** is **On**, and **Microsoft 365 connector** is **Connected**. **Copilot Studio** can remain **Not connected** if you skip the optional section below.
+
+Allow up to 60 minutes for newly enabled auditing to take effect; searchable audit events can take several additional hours. A connected connector does not prove that events have arrived. After generating activity, allow time for telemetry to index; licence assignments, inventory updates, and dashboard metrics can take longer.
 
 ### Optional: Copilot Studio real-time protection
 
-Real-time protection scans tool calls and can block suspicious actions. It is separate from the investigation connector and is not required for this read-only lab. If your administrator wants to enable it:
+Ask your administrators to complete this optional setup **once per lab environment**. It connects Copilot Studio to Defender for tool-invocation checks. The lab's investigation exercises use the Microsoft 365 connector configured above and do not require real-time protection.
+
+Use the [Defender onboarding guide](https://learn.microsoft.com/defender-xdr/security-for-ai/get-started-defender-security-for-ai#connect-data-sources) together with the [Copilot Studio external-provider setup](https://learn.microsoft.com/microsoft-copilot-studio/external-security-provider). The manual setup below does not require installing a PowerShell module.
+
+**A. Defender administrator: copy the integration endpoint**
 
 1. In Defender, open **Settings** > **Security for AI** > **Get started** > **Copilot Studio**.
-2. Turn **Real-time protection** on.
-3. Copy the **Enable Power Platform Integration** URL from Defender.
-4. A Power Platform Administrator follows the [external threat-detection setup](https://learn.microsoft.com/microsoft-copilot-studio/external-security-provider#step-2-configure-the-threat-detection-system), including the integration application and federated credential. In Power Platform admin center, open **Security** > **Threat detection** > **Additional threat detection**, select the environment, and configure the supplied endpoint and integration app ID.
-5. Save that same integration app ID back in Defender and wait for **Connected**.
+2. In **Copilot Studio real-time protection**, turn **Real-time protection** **On**.
+3. Under **Enable Power Platform Integration**, copy the supplied URL and give it to the Power Platform administrator. This is the protection-service endpoint. Preserve the complete URL, including its path and any trailing slash.
 
-Use the same integration app ID in both portals. It is not the lab agent's bot ID.
+**B. Application owner or administrator: prepare the integration app**
+
+You need permission to register an application and manage its federated credentials. An **Application Developer** can register an app; its owner or an administrator with appropriate application-management permissions can configure the credential. The Defender and Power Platform roles alone do not necessarily grant these permissions.
+
+You will use these values during setup:
+
+| Value | Where it is used |
+| --- | --- |
+| Integration **Application (client) ID** | Power Platform's **Azure Entra App ID** and Defender's **App ID** |
+| **Directory (tenant) ID** | Federated credential issuer and encoded subject |
+| Defender's integration endpoint URL | Power Platform's **Endpoint link** and encoded subject |
+
+Use the integration app's **Application (client) ID** for the integration App ID fields. The app's **Object ID**, the lab agent's bot ID, and the environment ID identify different objects.
+
+1. In the [Azure portal](https://portal.azure.com), open **Microsoft Entra ID** > **App registrations** > **New registration**.
+2. Give the integration a descriptive name, such as `Copilot Studio Defender Integration`, and choose the **single-tenant** account option for your organization.
+3. Select **Register**. From **Overview**, record the **Application (client) ID** and **Directory (tenant) ID**.
+4. In PowerShell, replace both placeholders below and run the block. It only calculates credential values locally; it does not create or change tenant resources.
+
+   ```powershell
+   $tenantId = '<Directory (tenant) ID>'
+   $endpoint = '<Enable Power Platform Integration URL from Defender>'
+
+   $T = [Convert]::ToBase64String(([guid]$tenantId).ToByteArray()).Replace('+', '-').Replace('/', '_').TrimEnd('=')
+   $E = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($endpoint)).Replace('+', '-').Replace('/', '_').TrimEnd('=')
+
+   [pscustomobject]@{
+       Issuer = "https://login.microsoftonline.com/$tenantId/v2.0"
+       Subject = "/eid1/c/pub/t/$T/a/m1WPnYRZpEaQKq1Cceg--g/$E"
+       Audience = 'api://AzureADTokenExchange'
+   } | Format-List
+   ```
+
+   The tenant value is encoded from **GUID bytes**, not the tenant ID's text. The endpoint is encoded from its **UTF-8 bytes**. Do not change the fixed `m1WPnYRZpEaQKq1Cceg--g` segment or substitute the integration App ID there. These values follow the [manual credential setup](https://learn.microsoft.com/microsoft-copilot-studio/external-security-provider#step-1-configure-a-microsoft-entra-application).
+
+5. In the integration app, open **Certificates & secrets** > **Federated credentials** > **Add credential**.
+6. Select **Other issuer** as the scenario. Enter the calculated **Issuer**, select **Explicit subject identifier**, and enter the calculated **Subject** in **Value**. If **Audience** is shown, use `api://AzureADTokenExchange`.
+7. Give the credential a name, such as `CopilotStudioDefender`, and select **Add**.
+
+**Checkpoint:** the credential is listed on the integration app's **Federated credentials** tab. This confirms creation, not yet a working provider connection. You do not need a client secret for this federation setup.
+
+**C. Power Platform administrator: connect the lab environment**
+
+1. Open the [Power Platform admin center](https://aka.ms/ppac).
+2. Open **Security** > **Threat detection** > **Additional threat detection**.
+3. Select the environment containing the lab agent, then **Set up**.
+4. Select **Allow Copilot Studio to share data with a threat detection provider**.
+5. In **Azure Entra App ID**, enter the integration app's **Application (client) ID**.
+6. In **Endpoint link**, paste the **same unchanged URL** copied from Defender and used to calculate the credential subject.
+7. Under **Set error behavior**, select the option approved by your security administrator. **Allow the agent to respond** is the default; **Block the query** prevents a response if the provider fails or exceeds its one-second response deadline.
+8. Select **Save**. Reopen the configuration and confirm the expected app ID and endpoint.
+
+The configuration applies only to the selected environment. It is not automatically enabled in other or newly created environments.
+
+**D. Defender administrator: finish the connection**
+
+1. Return to **Copilot Studio real-time protection** in Defender.
+2. In **App ID**, enter the **same integration Application (client) ID** saved in Power Platform.
+3. Select **Save**.
+4. Return to **Get started** and confirm **Copilot Studio** is **Connected**. A recently changed Power Platform app ID can take up to one minute to propagate before Defender validates it.
+
+**If setup fails**
+
+| Symptom | What the administrators should check |
+| --- | --- |
+| Power Platform cannot acquire a token | Correct tenant and client ID; credential on the correct app; issuer; GUID-byte encoding; exact endpoint; audience; accidental whitespace |
+| `AADSTS700016` | Application ID or tenant is incorrect |
+| `AADSTS70025` | The specified app has no federated credential |
+| Provider connection error | Exact endpoint and provider availability; select **Copy error info** for investigation |
+| Application ID does not match the registered application for webhook access | Confirm both portals use the integration client ID and the provider has authorized that app. If saving is blocked, select **Copy error info** and share the details with your administrators or provider |
+
+See the [external-provider troubleshooting guide](https://learn.microsoft.com/microsoft-copilot-studio/external-security-provider#troubleshooting). A credential can save successfully while containing an incorrect subject.
+
+**Connected is not proof of blocking.** Defender's built-in **Default** runtime-protection rule audits; blocking depends on the configured rules. See [runtime-protection behavior](https://learn.microsoft.com/defender-xdr/security-for-ai/ai-agent-real-time-protection). The external-provider documentation describes generative orchestration but does not explicitly confirm coverage of this lab's GitHub Copilot harness **Preview** path. Have your administrator confirm that coverage separately; neither a successful Preview turn nor the **Connected** status proves inline enforcement.
 
 ### Telemetry eligibility
 
@@ -168,8 +253,8 @@ Follow the [MCP server setup](https://learn.microsoft.com/microsoft-copilot-stud
 1. Open the agent's **Build** tab.
 2. In the components panel, select **Tools**.
 3. Click **Model Context Protocol (MCP)**.
-4. Type the keyword **search** in the search box.
-5. Select the box titled **Microsoft Learn Docs MCP Server**.
+4. Type **Microsoft Learn** in the search box.
+5. Select the **Microsoft Learn MCP server**. The catalog may label it **Microsoft Learn Docs MCP Server** or **Microsoft Learn Docs MCP**, published by Microsoft; see the [Microsoft Learn MCP setup guide](https://learn.microsoft.com/training/support/mcp-get-started-copilot-studio).
 6. If there is no available connection, click **Create new connection**.
 7. Once it is added, click it in the builder and confirm that the discovered tools include `microsoft_docs_search` and `microsoft_docs_fetch`. The server also exposes `microsoft_code_sample_search`.
 8. Save the agent.

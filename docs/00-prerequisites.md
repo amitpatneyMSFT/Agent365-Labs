@@ -12,17 +12,19 @@ Every SDK lab in this repository requires the same three things: tools on your m
 
 | Requirement | Minimum | Check it with | What needs it |
 | --- | --- | --- | --- |
-| .NET SDK | 8.0 or later | `dotnet --version` | The Agent 365 CLI itself, and .NET agents |
+| .NET SDK | 10.0 for the .NET lab; 8.0 or later for CLI-only use | `dotnet --list-sdks` | The .NET sample targets `net10.0`; the Agent 365 CLI also needs .NET |
 | Agent 365 CLI | latest | `a365 -h` | Every SDK lab |
 | PowerShell | 7.0 | `pwsh --version` | The consent scripts |
 | Azure CLI | latest | `az version` | Signing in to the tenant |
-| Az PowerShell module | latest | `Get-Module -ListAvailable Az.Accounts` | Granting permissions |
+| Microsoft Graph authentication module | latest | `Get-Module -ListAvailable Microsoft.Graph.Authentication` | CLI prerequisite checks and Graph authentication |
+| Microsoft Graph applications module | latest | `Get-Module -ListAvailable Microsoft.Graph.Applications` | CLI prerequisite checks and application permission scripts |
 | Git | any | `git --version` | Cloning the sample agents |
+| GitHub CLI (`gh`) | latest with `gh skill` support | `gh --version` | Installing skills for GitHub Copilot CLI or VS Code |
 | Python | 3.12 | `python --version` | Optional Python lab only |
 | uv | latest | `uv --version` | Optional Python lab only |
 | Node.js | 20.10 | `node --version` | Optional JavaScript / Node.js lab only |
 
-> The Agent 365 CLI requires .NET 8.0 or later, even if your agent is written in Python or TypeScript. It is distributed as a .NET global tool; the main .NET lab targets .NET 8. This requirement is for the **SDK labs** only; Lab A365-01 does not use the CLI.
+> Install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) for the main .NET lab. Confirm `dotnet --list-sdks` includes a `10.0.x` SDK; the linked sample targets `net10.0`. If you are taking only the Python or Node.js lab, .NET 8.0 or later is sufficient for the Agent 365 CLI. Lab A365-01 does not use the CLI.
 
 ### Install or update the Agent 365 CLI
 
@@ -62,6 +64,21 @@ a365 -h
 
 Confirm the tool list contains `Microsoft.Agents.A365.DevTools.Cli` and that `a365 -h` displays help. If Windows cannot find `a365`, open a new terminal and check that `%USERPROFILE%\.dotnet\tools` is on your `PATH`.
 
+### Install the Microsoft Graph PowerShell modules
+
+1. Open **PowerShell 7** (`pwsh`).
+2. Run the two `Get-Module` checks in the tools table. Each must return a module with the requested name.
+3. For each missing module, run its installation command:
+
+   ```powershell
+   Install-Module -Name Microsoft.Graph.Authentication -Scope CurrentUser
+   Install-Module -Name Microsoft.Graph.Applications -Scope CurrentUser
+   ```
+
+4. Repeat the checks and confirm both modules are available in PowerShell 7.
+
+Use your organization's configured PowerShell repositories. If a module is unavailable, ask your administrator to provide it through an approved source. Both modules must be available in PowerShell 7 for the Agent 365 CLI's prerequisite check.
+
 ## Installing the Agent 365 Skills
 
 Most of the Agent 365 work in the **SDK labs** is done by asking an AI coding assistant to do it, using the [Agent 365 Skills](https://github.com/microsoft/agent365-skills). The skills work with every major assistant, and each one installs them differently. Pick the row that matches the tool you use:
@@ -69,10 +86,12 @@ Most of the Agent 365 work in the **SDK labs** is done by asking an AI coding as
 | Your assistant | How to install |
 | --- | --- |
 | Claude Code (app, web or CLI) | Run `/plugin marketplace add https://github.com/microsoft/agent365-skills` inside a session, then `/plugin install agent365@agent365-skills` |
-| GitHub Copilot CLI, VS Code agent mode | `gh skill add microsoft/agent365-skills` |
+| GitHub Copilot CLI, VS Code agent mode | `gh skill add microsoft/agent365-skills --all` |
 | Cursor, Windsurf, Codex CLI, Gemini CLI, or anything else that reads `.agents/skills/` | `node /path/to/agent365-skills/scripts/install.js`, run from your agent project directory |
 
-Run the install from **your agent's project folder**, so the skills can see the code they are meant to change.
+Run the install from **your agent's project folder**, so the skills can see the code they are meant to change. The GitHub CLI command uses `--all` to install every discovered skill without a selection prompt. Restart your coding assistant after installation so it loads the skills.
+
+If `gh` is unavailable, install the [GitHub CLI](https://cli.github.com/) through your organization's approved software channel. Run `gh skill add --help` and confirm it lists `--all`; if the `skill` command is unavailable, update the CLI through the same channel.
 
 > Lab A365-01 does not use these coding-assistant skills. It uses a native skill created inside the Copilot Studio browser authoring experience.
 
@@ -81,20 +100,26 @@ Run the install from **your agent's project folder**, so the skills can see the 
 | Requirement | What to know |
 | --- | --- |
 | Microsoft 365 tenant | With Agent 365 enabled |
-| Agent 365 licence | **At least one user in the tenant must hold one** |
+| Observability licence | **At least one user in the tenant must have Microsoft 365 E7 or Microsoft Agent 365 assigned** |
+| Microsoft 365 Copilot | Required for Work IQ in Exercise 5 of the .NET and Node.js labs. Confirm the user who will sign in and call Mail and Calendar has this entitlement. The Python lab does not implement Work IQ |
 | Azure subscription | For the Azure OpenAI resource the agent reasons with |
 
-> If nobody in the tenant holds an Agent 365 licence, telemetry is accepted with `HTTP 200` and then discarded. The logs report a successful export, Defender shows no data, and no error is raised. Verify the licence before you start.
+> If no user has Microsoft 365 E7 or Microsoft Agent 365 assigned, telemetry is accepted with `HTTP 200` and then discarded. The logs report a successful export, Defender shows no data, and no error is raised. Verify an actual user assignment before you start; having the subscription available in the tenant is not enough.
+
+Identity registration requires Agent 365 to be enabled but does not require an additional licence. Observability and Work IQ have separate licence requirements; a Microsoft 365 Copilot licence alone does not meet the observability requirement. See the [capability-specific prerequisites](https://learn.microsoft.com/microsoft-agent-365/developer/get-started#prerequisites).
 
 ## The permissions you need on your account for the SDK labs
 
 | Permission | Who needs it | What it is for |
 | --- | --- | --- |
-| Application Developer (or higher) | You | Creating app registrations |
+| Agent ID Developer, or a role that includes blueprint creation | You | Creating the agent identity blueprint in Exercise 3 |
+| Application Developer, or equivalent app-registration permissions | You | Creating the ordinary web sign-in app registration in Exercise 2 |
 | Global Administrator | You *or* a colleague | Granting admin consent to the blueprint |
 | Azure OpenAI access | You | The model the agent uses. For the Entra credential path you need the **Cognitive Services OpenAI User** role on the resource; for key auth, access to the resource keys |
 
 > You do not need to be a Global Administrator yourself. The CLI performs every action it is permitted to perform, then prints a PowerShell snippet for an administrator to run for the rest. Identify the person who will run it before you start.
+
+Ask your Microsoft Entra administrator to confirm you have both blueprint-creation and ordinary app-registration permissions before starting. **Application Developer** does not grant the blueprint-creation permission. See the [Agent 365 setup prerequisites](https://learn.microsoft.com/microsoft-agent-365/developer/get-started#prerequisites).
 
 The web on-behalf-of labs contain two of these handoffs: one when the agent is registered, and one when the sign-in app is given permission to call the agent's blueprint. Each takes an administrator about a minute.
 
@@ -150,8 +175,9 @@ Use these Azure settings when creating your project:
 3. Open the project selector in the upper-left corner and select **Create new project**. If your first sign-in already shows the project creation form, continue with that form.
 4. Enter `agent365-labs-ab` as the project name, replacing `ab` with your initials.
 5. Expand **Advanced options** and enter the Azure settings from the table above.
-6. Select **Create** or **Create project**, as shown in the form. Foundry creates the project and its parent Foundry resource.
-7. Wait for creation to finish. Confirm `agent365-labs-ab` appears in the project selector.
+6. Turn **Set up recommended resources** **Off**. This option is enabled by default and provisions additional resources, including Application Insights, that can incur separate charges. This lab sends telemetry to Agent 365 and does not require Application Insights. If your organization requires those resources, ask your administrator to approve the configuration and costs.
+7. Select **Create** or **Create project**, as shown in the form. Foundry creates the project and its parent Foundry resource.
+8. Wait for creation to finish. Confirm `agent365-labs-ab` appears in the project selector.
 
 If your organization requires private networking, specific resource names, or mandatory tags, ask your administrator to prepare a compliant project using the [Foundry project setup guide](https://learn.microsoft.com/azure/foundry/how-to/create-projects). Confirm your lab machine can reach its model endpoint before continuing.
 
@@ -160,7 +186,7 @@ If your organization requires private networking, specific resource names, or ma
 ### Step 3: Deploy a chat model
 
 1. In Foundry, confirm your lab project is selected.
-2. Select **Discover** in the upper-right navigation, then **Models** in the left pane.
+2. Select **Catalog** > **Models**.
 3. Search for **gpt-4.1** and open its model card. This Azure OpenAI chat model supports the tool calls used by the sample agents. If it is unavailable, ask your facilitator for an approved chat model with tool-calling support.
 4. Select **Deploy** > **Custom settings**.
 5. Confirm the deployment targets your lab project's Foundry resource.

@@ -36,7 +36,7 @@ In A365-02A, a user opens a web page, signs in, and drives the agent. Everything
 
 | Lab | Stack | Framework and host | Duration | Level |
 | --- | --- | --- | --- | --- |
-| [A365-02A](./docs/02a-web-obo-dotnet.md) | .NET 8 | Agent Framework on Blazor Server | ~3 hours | Intermediate |
+| [A365-02A](./docs/02a-web-obo-dotnet.md) | .NET 10 | Agent Framework on Blazor Server | ~3 hours | Intermediate |
 
 ## Optional labs
 
@@ -86,7 +86,7 @@ Check the prerequisites at the relevant point in the flow:
 | **Copilot Studio** | Copilot Studio new experience, tenant licensing and credits, Defender connector readiness, and browser access to the right environment |
 | **SDK labs** | CLI, SDK, Azure OpenAI, local code, sample agent clone, and admin consent handoffs |
 
-The .NET 8 SDK and Agent 365 CLI are required for the **SDK labs** because the CLI is distributed as a .NET global tool. **The Copilot Studio lab does not use the CLI, PAC, local code, or Azure OpenAI.** Python, uv, and Node.js are needed only for their respective optional labs.
+The main .NET lab requires the **.NET 10 SDK** because its sample targets `net10.0`. The Agent 365 CLI is a .NET global tool and requires .NET 8.0 or later, including for the Python and Node.js labs. Observability requires at least one user assigned Microsoft 365 E7 or Microsoft Agent 365; the Work IQ exercises additionally require Microsoft 365 Copilot. **The Copilot Studio lab does not use the CLI, PAC, local code, or Azure OpenAI.** Python, uv, and Node.js are needed only for their respective optional labs.
 
 ## How the labs are written
 

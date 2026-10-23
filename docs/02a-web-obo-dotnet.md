@@ -38,6 +38,7 @@ The starting point for this lab is the local .NET sample agent. If you already c
 ```bash
 git clone https://github.com/microsoft/agent365-labs
 cd agent365-labs/samples/dotnet
+code .
 ```
 
 It is a research assistant that answers questions about Microsoft products by searching the [Microsoft Learn MCP server](https://learn.microsoft.com/api/mcp) and citing what it found. It already contains the Microsoft Entra sign-in that the OBO path depends on, but that sign-in stays dormant until you fill in the settings in Exercise 2.
@@ -61,13 +62,13 @@ Confirm that the agent works before adding anything. Start from a known-good bas
 
 ### Step 1: Configure the Azure OpenAI connection
 
-Open `appsettings.json` and fill in the three values you collected in the prerequisites:
+Open `appsettings.json` in Visual Studio Code and fill in the three values you collected in the prerequisites:
 
 ```json
 {
   "AzureOpenAI": {
     "Endpoint": "https://<your-resource>.openai.azure.com/",
-    "Deployment": "<your-deployment-name>",
+    "Deployment": "gpt-6.1-sol",
     "TenantId": "<tenant that owns the Azure OpenAI resource>"
   },
   "LearnMcp": { "Endpoint": "https://learn.microsoft.com/api/mcp" }
@@ -75,6 +76,12 @@ Open `appsettings.json` and fill in the three values you collected in the prereq
 ```
 
 > The tenant id is required when you work across more than one tenant. Without it, the credential returns a token from whichever tenant you last signed in to, and the service responds with `HTTP 400` and `Tenant provided in token does not match resource token`.
+
+The .NET starter uses the **Responses API**, which supports function tools together with
+reasoning for `gpt-6.1-sol`. It does not turn reasoning off or fall back to Chat Completions.
+Keep the resource base endpoint shown above: `AzureOpenAIClient` adds the Responses path and
+API version. Do not append `/openai/v1/` or substitute a Foundry project endpoint.
+The deployment setting must match your Azure deployment name.
 
 ### Step 2: Decide how the agent authenticates to Azure OpenAI
 
@@ -104,6 +111,8 @@ dotnet user-secrets set "AzureOpenAI:ApiKey" "<your-key>"
 You can also set the `AzureOpenAI__ApiKey` environment variable, which is the approach for hosting environments where user secrets are not available.
 
 ### Step 3: Run the agent and ask it something
+
+Open a terminal in the folder of the lab and run the following command:
 
 ```bash
 dotnet run
@@ -533,11 +542,16 @@ builder.UseMicrosoftOpenTelemetry(o =>
 
 `o.Exporters` is a flags enum. During development, set it to `Agent365 | Console` so spans also appear in the terminal. `TokenResolver` is the hook the exporter calls when it needs a token; it reads from a store that stays empty until Step 5 fills it.
 
-LLM calls only emit spans if the chat client is instrumented. The sample builds the agent from the Azure OpenAI chat client, so add the instrumentation between the two:
+LLM calls only emit these framework spans if the `IChatClient` is instrumented. The sample
+adapts the Azure OpenAI **Responses** client to `IChatClient`; that interface name does not
+mean Chat Completions. Replace the starter's `chatClient` construction with this pipeline
+and pass the result to the same `AsAIAgent` call:
 
 ```csharp
-var instrumentedChatClient = azureClient.GetChatClient(aoaiDeployment)
-    .AsIChatClient()
+#pragma warning disable OPENAI001, MEAI001 // Responses APIs are experimental in the pinned SDKs.
+var instrumentedChatClient = azureClient.GetResponsesClient()
+    .AsIChatClient(aoaiDeployment)
+#pragma warning restore OPENAI001, MEAI001
     .AsBuilder()
     .UseFunctionInvocation()
     .UseOpenTelemetry(configure: cfg => cfg.EnableSensitiveData = true)
@@ -549,9 +563,17 @@ return instrumentedChatClient.AsAIAgent(
     tools: learnMcpTools.Cast<AITool>().ToList());
 ```
 
-- `UseFunctionInvocation()` intercepts tool calls so they surface as tool spans.
-- `UseOpenTelemetry()` emits the `chat` spans that `InvokeAgentScope` anchors as children in Step 8.
+- `AsIChatClient(aoaiDeployment)` supplies the Azure deployment as the Responses request's `model`. Reasoning remains at the model default; do not set it to `none` to work around a Chat Completions error.
+- `UseFunctionInvocation()` executes the discovered MCP function tools and emits `execute_tool` spans. It uses the active `invoke_agent` activity source, or the inner telemetry client's source when there is no invocation scope. Keep it outside `UseOpenTelemetry()` in this builder order.
+- `UseOpenTelemetry()` emits a `chat` span for each model request, even though the transport is Responses. `InvokeAgentScope` anchors model and tool spans as children in Step 8.
 - `EnableSensitiveData` writes prompts and completions into span attributes.
+
+`AsAIAgent` recognizes the existing function-invocation middleware; do not add a second
+invocation loop. Leave the `Home.razor` session lifecycle unchanged: each page creates one
+`AgentSession` and reuses it for every turn. The adapter carries `previous_response_id`
+through tool outputs and later user turns, retaining reasoning context in service-managed
+Responses history. This requires response storage and is subject to Azure retention; it
+does not persist the app's session across a page reload or restart.
 
 ### Step 4: Implement the two-hop token chain
 

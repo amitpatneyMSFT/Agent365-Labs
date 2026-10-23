@@ -141,7 +141,7 @@ Use these Azure settings when creating your project:
 | --- | --- |
 | **Subscription** | Your current subscription |
 | **Resource group** | Select the group provided by your facilitator, or allow the portal to create a dedicated group for this lab |
-| **Location** | An organization-approved region that supports `gpt-4.1`; check [model availability by region](https://learn.microsoft.com/azure/foundry/foundry-models/concepts/models-sold-directly-by-azure-region-availability) |
+| **Location** | An organization-approved region that supports `gpt-6.1-sol`; check [model availability by region](https://learn.microsoft.com/azure/foundry/foundry-models/concepts/models-sold-directly-by-azure-region-availability) |
 
 1. Open [Microsoft Foundry](https://ai.azure.com) and sign in with the same account.
 2. Make sure that the **New Foundry** toggle **On**.
@@ -179,6 +179,11 @@ Use these Azure settings when creating your project:
 | Tenant ID | The directory's GUID | .NET: `AzureOpenAI:TenantId`; Python/Node.js: `AZURE_OPENAI_TENANT_ID` |
 
 The lab samples use the **Azure OpenAI base endpoint**, not the Foundry project endpoint ending in `/api/projects/<project-name>`. Use the **deployment name** in configuration, even if you chose a name different from the underlying model.
+
+The .NET starter uses the **Responses API** so `gpt-6.1-sol` can combine reasoning with
+function tools. Python and Node.js retain their existing API paths; the .NET migration
+does not establish tool-plus-reasoning compatibility for those optional labs. Check that
+compatibility with your facilitator before using the same deployment in another stack.
 
 ### Step 5: Grant your account access to call the model
 

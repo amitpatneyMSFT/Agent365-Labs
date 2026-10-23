@@ -23,7 +23,7 @@ documentation, and grounds every answer in the retrieved content with source URL
 | --- | --- |
 | Framework | .NET 10, Blazor Web App (Interactive Server) |
 | Agent | `Microsoft.Agents.AI.OpenAI` (`AsAIAgent`) |
-| Model | Azure OpenAI `gpt-4.1`, auth via `DefaultAzureCredential` |
+| Model | Azure OpenAI `gpt-6.1-sol` via the Responses API, auth via `DefaultAzureCredential` or an API key |
 | Tools | Microsoft Learn MCP (`microsoft_docs_search`, `microsoft_code_sample_search`, `microsoft_docs_fetch`) over streamable HTTP |
 | Sign-in | Microsoft Identity Web, disabled until `AzureAd` and `Agent365Observability` are configured |
 
@@ -35,7 +35,7 @@ documentation, and grounds every answer in the retrieved content with source URL
 {
   "AzureOpenAI": {
     "Endpoint": "https://<resource>.openai.azure.com/",
-    "Deployment": "gpt-4.1",
+    "Deployment": "gpt-6.1-sol",
     "TenantId": "<tenant of the Azure OpenAI resource>"
   },
   "AzureAd": {
@@ -55,6 +55,23 @@ documentation, and grounds every answer in the retrieved content with source URL
 `AzureOpenAI:TenantId` pins `DefaultAzureCredential` to the tenant that owns the Azure OpenAI
 resource. Without it you may get `HTTP 400 – Tenant provided in token does not match resource token`
 when your signed-in identity lives in another tenant.
+
+Keep `Endpoint` as the resource base URL above, not a Foundry project URL or a URL ending in
+`/openai/v1/`. The pinned `Azure.AI.OpenAI` SDK adds the Responses path and API version.
+`Deployment` is your Azure deployment name, even if it differs from the model name.
+
+`Program.cs` uses `AzureOpenAIClient.GetResponsesClient().AsIChatClient(aoaiDeployment)` and
+then `AsAIAgent`. `IChatClient` is the framework abstraction, not the Chat Completions transport.
+Responses lets `gpt-6.1-sol` use the discovered MCP function tools together with reasoning;
+the sample leaves reasoning at the model default, never sets it to `none`, and has no
+Chat Completions fallback. The narrow `OPENAI001`/`MEAI001` pragmas acknowledge the experimental
+Responses APIs in the pinned SDKs; no dependency upgrade is needed.
+
+Each Blazor page keeps its own `AgentSession`, as before. The Responses adapter uses
+`previous_response_id` for service-managed history, including tool-call outputs and reasoning
+context, across requests in that session. This relies on Azure Responses storage and retention;
+it is not durable application history across page reloads or restarts. Do not disable response
+storage without also configuring client-managed history and reasoning-item round-tripping.
 
 The Entra sign-in settings are intentionally blank in source control. When any required value is blank
 or still looks like a placeholder, the app skips the authentication pipeline and runs the chat page

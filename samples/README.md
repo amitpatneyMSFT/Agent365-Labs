@@ -22,6 +22,8 @@ Copied from [qmatteoq/agent365-runbook](https://github.com/qmatteoq/agent365-run
 
 The complete tracked starters are retained, including project names, static assets and source maps, launch settings, Python IDE files, `.env.example`, `.python-version` and `uv.lock`. No real secrets, generated build outputs, virtual environments or caches are included.
 
-The only adaptations within the imported starters are README links: runbook links now use immutable upstream URLs, and the Python README's Node.js sibling link points to the external source. Runtime code, configuration, dependency manifests and the lock file are unchanged. The labs require .NET 10 to match the source project's `net10.0` target.
+README links use immutable upstream URLs, and the Python README's Node.js sibling link points to the external source. The .NET starter intentionally differs from the pinned upstream runtime: it uses the Azure OpenAI Responses API through the SDK's `IChatClient` adapter so `gpt-6.1-sol` can combine reasoning with MCP function tools, and its default deployment is now `gpt-6.1-sol`. Its README and the .NET lab describe this adaptation, session continuation, and the matching telemetry pipeline. Dependency manifests and the Python lock file are unchanged. The labs require .NET 10 to match the source project's `net10.0` target.
+
+This Responses migration is .NET-only. Python and the external Node.js starter retain their existing API paths; check model/tool/reasoning compatibility separately before using those optional stacks.
 
 The source owner requested this copy. No top-level license was present in the source repository at the pinned commit; this import does not add or imply one. Existing third-party notices, including the Bootstrap copyright and license headers in the bundled assets, are retained unchanged.

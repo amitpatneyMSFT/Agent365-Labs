@@ -8,7 +8,6 @@ using Microsoft.Extensions.AI;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using ModelContextProtocol.Client;
-using OpenAI.Chat;
 using System.ClientModel;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -85,7 +84,12 @@ builder.Services.AddSingleton<AIAgent>(sp =>
         azureClient = new AzureOpenAIClient(new Uri(aoaiEndpoint), credential);
     }
 
-    return azureClient.GetChatClient(aoaiDeployment).AsAIAgent(
+    // The Responses transport supports function tools together with model-default reasoning.
+#pragma warning disable OPENAI001, MEAI001 // Responses APIs are experimental in the pinned SDKs.
+    var chatClient = azureClient.GetResponsesClient().AsIChatClient(aoaiDeployment);
+#pragma warning restore OPENAI001, MEAI001
+
+    return chatClient.AsAIAgent(
         instructions:
             "You are a Microsoft ecosystem research assistant. You specialise in answering questions about " +
             "Microsoft products and technologies - Azure, Microsoft 365, Power Platform, .NET, Windows, " +

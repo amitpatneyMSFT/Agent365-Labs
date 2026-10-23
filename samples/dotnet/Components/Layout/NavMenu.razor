@@ -1,0 +1,34 @@
+﻿@inject Agent365SignInOptions SignInOptions
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Microsoft Learn Agent</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Chat
+            </NavLink>
+        </div>
+        @if (SignInOptions.IsEnabled)
+        {
+            <AuthorizeView>
+                <Authorized>
+                    <div class="nav-item px-3">
+                        <span class="nav-link">Signed in as @context.User.Identity?.Name</span>
+                    </div>
+                    <div class="nav-item px-3">
+                        <a class="nav-link" href="MicrosoftIdentity/Account/SignOut">
+                            <span class="bi bi-box-arrow-right" aria-hidden="true"></span> Sign out
+                        </a>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+        }
+    </nav>
+</div>

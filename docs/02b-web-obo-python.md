@@ -33,7 +33,7 @@ After completing this lab, you will be able to:
 
 ## Prerequisites
 
-Complete the [prerequisites page](./00-prerequisites.md) before you start. You need Python 3.12, uv, the .NET 8 SDK for the Agent 365 CLI, the Agent 365 CLI itself, an Azure OpenAI resource, a tenant with Agent 365 enabled and at least one Agent 365 licence, and access to an administrator who can grant consent twice.
+Complete the [prerequisites page](./00-prerequisites.md) before you start. You need Python 3.12, uv, .NET 8.0 or later for the Agent 365 CLI, the Agent 365 CLI itself, an Azure OpenAI model deployment, a tenant with Agent 365 enabled and at least one user assigned Microsoft 365 E7 or Microsoft Agent 365, and access to an administrator who can grant consent. Confirm you have Agent ID Developer for blueprint creation and separate app-registration permissions for the web sign-in app. Microsoft 365 Copilot is not required for this lab because its Work IQ exercise is explanatory only.
 
 The starting point is the Python sample agent:
 
@@ -807,7 +807,7 @@ Validate the Agent 365 observability code in this project.
 | Symptom | Likely cause |
 | --- | --- |
 | `Partitioned into 0 identity groups` | No active baggage scope around the turn. Exercise 4, Step 6 |
-| `HTTP 200`, but nothing lands anywhere | No user in the tenant holds an Agent 365 licence |
+| `HTTP 200`, but nothing lands anywhere | No user in the tenant has Microsoft 365 E7 or Microsoft Agent 365 assigned |
 | `AADSTS500011` resource principal not found | Agent 365 is not provisioned in this tenant |
 | Consent errors on the observability scope | The admin consent handoff from Exercise 3, Step 1 was never run |
 | `AADSTS50011` redirect URI mismatch | The registered redirect URI does not match the address the browser is on, scheme included. Exercise 2, Step 1 |

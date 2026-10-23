@@ -2,7 +2,7 @@
 
 **Main flow: [1. Copilot Studio](./01-copilot-studio.md) → [2. SDK requirements](./00-prerequisites.md) → 3. .NET**
 
-> **Stack**: .NET 8, Microsoft Agent Framework, Blazor Server **Duration**: around 3 hours **Level**: Intermediate
+> **Stack**: .NET 10, Microsoft Agent Framework, Blazor Server **Duration**: around 3 hours **Level**: Intermediate
 
 ## Scenario
 
@@ -31,7 +31,7 @@ After completing this lab, you will be able to:
 
 ## Prerequisites
 
-After the [Copilot Studio lab](./01-copilot-studio.md), work through the [SDK requirements](./00-prerequisites.md) before you start. In short, you need the .NET 8 SDK, the Agent 365 CLI, an Azure OpenAI resource, a tenant with Agent 365 enabled and at least one Agent 365 licence in it, and access to an administrator who can grant consent twice.
+After the [Copilot Studio lab](./01-copilot-studio.md), work through the [SDK requirements](./00-prerequisites.md) before you start. You need the .NET 10 SDK, the Agent 365 CLI, an Azure OpenAI model deployment, a tenant with Agent 365 enabled and at least one user assigned Microsoft 365 E7 or Microsoft Agent 365, and access to an administrator who can grant consent. Confirm you have Agent ID Developer for blueprint creation and separate app-registration permissions for the web sign-in app. Exercise 5 also requires Microsoft 365 Copilot for the user calling Work IQ.
 
 The starting point for this lab is the .NET sample agent:
 
@@ -697,6 +697,8 @@ Ask the agent a question and check the output for:
 
 With observability in place, give the agent access to Microsoft 365 data (Mail, Calendar, and more) through the Work IQ MCP servers. The agent reaches this data using the signed-in user's own permissions.
 
+Confirm the signed-in user has a **Microsoft 365 Copilot** licence before continuing. This is a separate requirement from the tenant's observability licence. A Global Administrator must also grant the Work IQ server permissions; see [Work IQ prerequisites](https://learn.microsoft.com/microsoft-agent-365/developer/get-started#connect-microsoft-365-data).
+
 ### Step 1: Run the Work IQ skill
 
 **What you type**
@@ -777,7 +779,7 @@ Validate the Agent 365 observability code in this project.
 | Symptom | Likely cause |
 | --- | --- |
 | `Partitioned into 0 identity groups` | No active baggage scope around the turn. Exercise 4, Step 6 |
-| `HTTP 200`, but nothing lands anywhere | No user in the tenant holds an Agent 365 licence |
+| `HTTP 200`, but nothing lands anywhere | No user in the tenant has Microsoft 365 E7 or Microsoft Agent 365 assigned |
 | `AADSTS500011` resource principal not found | Agent 365 is not provisioned in this tenant |
 | Consent errors on the observability scope | The admin consent handoff from Exercise 3, Step 1 was never run |
 | `AADSTS50011` redirect URI mismatch | The registered redirect URI does not match the address the browser is on, scheme included. Exercise 2, Step 1 |

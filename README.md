@@ -36,7 +36,7 @@ In A365-02A, a user opens a web page, signs in, and drives the agent. Everything
 
 | Lab | Stack | Framework and host | Duration | Level |
 | --- | --- | --- | --- | --- |
-| [A365-02A](./docs/02a-web-obo-dotnet.md) | .NET 8 | Agent Framework on Blazor Server | ~3 hours | Intermediate |
+| [A365-02A](./docs/02a-web-obo-dotnet.md) | .NET 10 | Agent Framework on Blazor Server | ~3 hours | Intermediate |
 
 ## Optional labs
 
@@ -86,7 +86,7 @@ Check the prerequisites at the relevant point in the flow:
 | **Copilot Studio** | Copilot Studio new experience, tenant licensing and credits, Defender connector readiness, and browser access to the right environment |
 | **SDK labs** | CLI, SDK, Azure OpenAI, local code, sample agent clone, and admin consent handoffs |
 
-The .NET 8 SDK and Agent 365 CLI are required for the **SDK labs** because the CLI is distributed as a .NET global tool. **The Copilot Studio lab does not use the CLI, PAC, local code, or Azure OpenAI.** Python, uv, and Node.js are needed only for their respective optional labs.
+The Agent 365 CLI requires .NET 8 or later; the local .NET sample targets .NET 10 and requires the .NET 10 SDK. **The Copilot Studio lab does not use the CLI, PAC, local code, or Azure OpenAI.** Python, uv, and Node.js are needed only for their respective optional labs.
 
 ## How the labs are written
 
@@ -112,6 +112,7 @@ The SDK labs do most of the Agent 365 work by asking an AI coding assistant to d
 | [`docs/02b-web-obo-python.md`](./docs/02b-web-obo-python.md) | Optional lab A365-02B, Python |
 | [`docs/02c-web-obo-nodejs.md`](./docs/02c-web-obo-nodejs.md) | Optional lab A365-02C, JavaScript / Node.js (TypeScript) |
 | [`docs/99-sample-prompts.md`](./docs/99-sample-prompts.md) | Prompts chosen to produce specific, checkable telemetry |
+| [`samples/`](./samples/README.md) | Local .NET and Python starting points, with source provenance |
 | `mkdocs.yml` | Documentation site configuration |
 | `docs/stylesheets`, `docs/javascripts` | Site theme and widgets |
 
@@ -130,11 +131,18 @@ The theme and the `cc-card` and `cc-next` widgets are adapted from the [Copilot 
 
 ## Where the SDK sample agents come from
 
-The starting points for these labs are the three sample agents in the [Agent 365 runbook repository](https://github.com/qmatteoq/agent365-runbook), under `01-scenarios/Web-App-Agent-User-OBO/0.Resources/Starting-point/`. They are the same agent in three stacks: a research assistant that answers questions about Microsoft products by searching the [Microsoft Learn MCP server](https://learn.microsoft.com/api/mcp) and citing what it found. None of them contains any Agent 365 code.
+The .NET and Python starting points are included in this repository under [`samples/dotnet`](./samples/dotnet/) and [`samples/python`](./samples/python/). Clone this repository and open the .NET sample for the main flow:
+
+```bash
+git clone https://github.com/microsoft/agent365-labs
+cd agent365-labs/samples/dotnet
+```
+
+For the optional Python lab, open `agent365-labs/samples/python` instead. The Node.js starting point remains external in the [Agent 365 runbook repository](https://github.com/qmatteoq/agent365-runbook/tree/main/01-scenarios/Web-App-Agent-User-OBO/0.Resources/Starting-point/nodejs); its lab includes separate clone instructions.
+
+All three are research assistants that answer questions about Microsoft products by searching the [Microsoft Learn MCP server](https://learn.microsoft.com/api/mcp) and citing what they found. They include dormant Entra sign-in plumbing but no Agent 365 instrumentation. See [`samples/README.md`](./samples/README.md) for the pinned source commit and import details.
 
 You can bring your own agent instead. The labs assume it runs as a web app with one HTTP request per turn, and that there is a single place in the code where a turn begins and ends, which is where the instrumentation goes.
-
-> This is a first draft. The sample agents are still referenced from the runbook repository instead of being vendored into this one, so cloning them is currently a manual step described in each lab.
 
 Start with a new Copilot Studio agent in the product. After completing the SDK requirements, take the same documentation-assistant idea through the .NET web-app lab. Python and JavaScript are optional follow-on labs.
 

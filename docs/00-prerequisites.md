@@ -12,7 +12,7 @@ Every SDK lab in this repository requires the same three things: tools on your m
 
 | Requirement | Minimum | Check it with | What needs it |
 | --- | --- | --- | --- |
-| .NET SDK | 8.0 or later | `dotnet --version` | The Agent 365 CLI itself, and .NET agents |
+| .NET SDK | 10.0 for the .NET sample; 8.0 or later for the CLI | `dotnet --list-sdks` | The Agent 365 CLI itself, and .NET agents |
 | Agent 365 CLI | latest | `a365 -h` | Every SDK lab |
 | PowerShell | 7.0 | `pwsh --version` | The consent scripts |
 | Azure CLI | latest | `az version` | Signing in to the tenant |
@@ -22,7 +22,7 @@ Every SDK lab in this repository requires the same three things: tools on your m
 | uv | latest | `uv --version` | Optional Python lab only |
 | Node.js | 20.10 | `node --version` | Optional JavaScript / Node.js lab only |
 
-> The Agent 365 CLI requires .NET 8.0 or later, even if your agent is written in Python or TypeScript. It is distributed as a .NET global tool; the main .NET lab targets .NET 8. This requirement is for the **SDK labs** only; Lab A365-01 does not use the CLI.
+> The Agent 365 CLI requires .NET 8.0 or later, even if your agent is written in Python or TypeScript. It is distributed as a .NET global tool; the main .NET lab targets .NET 10 and requires the .NET 10 SDK. These requirements are for the **SDK labs** only; Lab A365-01 does not use the CLI.
 
 ### Install or update the Agent 365 CLI
 
@@ -100,20 +100,22 @@ The web on-behalf-of labs contain two of these handoffs: one when the agent is r
 
 ## Getting the sample agent
 
-The SDK labs start from a research assistant that answers questions about Microsoft products by searching the Microsoft Learn MCP server. Clone the runbook repository and open the .NET sample for the main flow:
+The SDK labs start from a research assistant that answers questions about Microsoft products by searching the Microsoft Learn MCP server. Clone this repository and open the local .NET sample for the main flow:
 
 ```bash
-git clone https://github.com/qmatteoq/agent365-runbook
-cd agent365-runbook/01-scenarios/Web-App-Agent-User-OBO/0.Resources/Starting-point/dotnet
+git clone https://github.com/microsoft/agent365-labs
+cd agent365-labs/samples/dotnet
 ```
 
-The sample folders under `Starting-point/` are:
+The .NET and Python starters are local to this repository. Node.js remains in the external runbook repository:
 
 | Lab | Folder |
 | --- | --- |
-| A365-02A (.NET, main flow) | `dotnet/` |
-| A365-02B (Python, optional) | `python/` |
-| A365-02C (JavaScript / Node.js, optional) | `nodejs/` |
+| A365-02A (.NET, main flow) | `agent365-labs/samples/dotnet/` |
+| A365-02B (Python, optional) | `agent365-labs/samples/python/` |
+| A365-02C (JavaScript / Node.js, optional) | External: `agent365-runbook/01-scenarios/Web-App-Agent-User-OBO/0.Resources/Starting-point/nodejs/` |
+
+If you already cloned this repository, open the relevant folder in that checkout rather than cloning it again. For Node.js, follow the separate clone instructions in [Lab A365-02C](./02c-web-obo-nodejs.md).
 
 You can bring your own agent instead. The SDK labs assume two things about it: it runs as a web app with one HTTP request per turn, and there is a single place in the code where a turn begins and ends, which is where the instrumentation goes.
 

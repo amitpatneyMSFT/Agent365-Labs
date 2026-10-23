@@ -2,7 +2,7 @@
 
 **Main flow: [1. Copilot Studio](./01-copilot-studio.md) → [2. SDK requirements](./00-prerequisites.md) → 3. .NET**
 
-> **Stack**: .NET 8, Microsoft Agent Framework, Blazor Server **Duration**: around 3 hours **Level**: Intermediate
+> **Stack**: .NET 10, Microsoft Agent Framework, Blazor Server **Duration**: around 3 hours **Level**: Intermediate
 
 ## Scenario
 
@@ -31,13 +31,13 @@ After completing this lab, you will be able to:
 
 ## Prerequisites
 
-After the [Copilot Studio lab](./01-copilot-studio.md), work through the [SDK requirements](./00-prerequisites.md) before you start. In short, you need the .NET 8 SDK, the Agent 365 CLI, an Azure OpenAI resource, a tenant with Agent 365 enabled and at least one Agent 365 licence in it, and access to an administrator who can grant consent twice.
+After the [Copilot Studio lab](./01-copilot-studio.md), work through the [SDK requirements](./00-prerequisites.md) before you start. In short, you need the .NET 10 SDK, the Agent 365 CLI, an Azure OpenAI resource, a tenant with Agent 365 enabled and at least one Agent 365 licence in it, and access to an administrator who can grant consent twice.
 
-The starting point for this lab is the .NET sample agent:
+The starting point for this lab is the local .NET sample agent. If you already cloned this repository during the SDK requirements, open `samples/dotnet` in that checkout; otherwise:
 
 ```bash
-git clone https://github.com/qmatteoq/agent365-runbook
-cd agent365-runbook/01-scenarios/Web-App-Agent-User-OBO/0.Resources/Starting-point/dotnet
+git clone https://github.com/microsoft/agent365-labs
+cd agent365-labs/samples/dotnet
 ```
 
 It is a research assistant that answers questions about Microsoft products by searching the [Microsoft Learn MCP server](https://learn.microsoft.com/api/mcp) and citing what it found. It already contains the Microsoft Entra sign-in that the OBO path depends on, but that sign-in stays dormant until you fill in the settings in Exercise 2.

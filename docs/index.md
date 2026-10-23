@@ -55,7 +55,7 @@ In A365-02A, a user opens a web page, signs in, and drives the agent. Everything
 
 | Lab | Stack | Framework and host | Duration | Level |
 | --- | --- | --- | --- | --- |
-| [A365-02A](02a-web-obo-dotnet.md) | .NET 8 | Agent Framework on Blazor Server | ~3 hours | Intermediate |
+| [A365-02A](02a-web-obo-dotnet.md) | .NET 10 | Agent Framework on Blazor Server | ~3 hours | Intermediate |
 
 ## Optional labs
 
@@ -130,12 +130,18 @@ The SDK labs do most of the Agent 365 work by asking an AI coding assistant to d
 
 ## Where the SDK sample agents come from
 
-The starting points for these labs are the three sample agents in the [Agent 365 runbook repository](https://github.com/qmatteoq/agent365-runbook), under `01-scenarios/Web-App-Agent-User-OBO/0.Resources/Starting-point/`. They are the same agent in three stacks: a research assistant that answers questions about Microsoft products by searching the [Microsoft Learn MCP server](https://learn.microsoft.com/api/mcp) and citing what it found. None of them contains any Agent 365 code.
+The .NET and Python starting points are included in this repository under `samples/dotnet` and `samples/python`. Clone this repository and open the .NET sample for the main flow:
+
+```bash
+git clone https://github.com/microsoft/agent365-labs
+cd agent365-labs/samples/dotnet
+```
+
+For the optional Python lab, open `agent365-labs/samples/python` instead. The Node.js starting point remains external in the [Agent 365 runbook repository](https://github.com/qmatteoq/agent365-runbook/tree/main/01-scenarios/Web-App-Agent-User-OBO/0.Resources/Starting-point/nodejs); its lab includes separate clone instructions.
+
+All three are research assistants that answer questions about Microsoft products by searching the [Microsoft Learn MCP server](https://learn.microsoft.com/api/mcp) and citing what they found. They include dormant Entra sign-in plumbing but no Agent 365 instrumentation. See the [sample provenance](https://github.com/microsoft/agent365-labs/blob/main/samples/README.md) for the pinned source commit and import details.
 
 You can bring your own agent instead. The labs assume it runs as a web app with one HTTP request per turn, and that there is a single place in the code where a turn begins and ends, which is where the instrumentation goes.
-
-!!! info "First draft"
-    The sample agents are still referenced from the runbook repository instead of being vendored into this one, so cloning them is currently a manual step described in each lab.
 
 Start with a new Copilot Studio agent in the product. After completing the SDK requirements, take the same documentation-assistant idea through the .NET web-app lab. Python and JavaScript are optional follow-on labs.
 

@@ -35,11 +35,11 @@ After completing this lab, you will be able to:
 
 Complete the [prerequisites page](./00-prerequisites.md) before you start. You need Python 3.12, uv, the .NET 8 SDK for the Agent 365 CLI, the Agent 365 CLI itself, an Azure OpenAI resource, a tenant with Agent 365 enabled and at least one Agent 365 licence, and access to an administrator who can grant consent twice.
 
-The starting point is the Python sample agent:
+The starting point is the local Python sample agent. If you already cloned this repository during the SDK requirements, open `samples/python` in that checkout; otherwise:
 
 ```bash
-git clone https://github.com/qmatteoq/agent365-runbook
-cd agent365-runbook/01-scenarios/Web-App-Agent-User-OBO/0.Resources/Starting-point/python
+git clone https://github.com/microsoft/agent365-labs
+cd agent365-labs/samples/python
 ```
 
 That folder contains a FastAPI web app backed by LangChain, Azure OpenAI and the official [Microsoft Learn MCP server](https://learn.microsoft.com/api/mcp). It includes the Microsoft Entra sign-in code that the OBO path depends on, but the sign-in stays dormant until you fill in the settings in Exercise 2.

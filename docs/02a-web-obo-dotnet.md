@@ -31,7 +31,7 @@ After completing this lab, you will be able to:
 
 ## Prerequisites
 
-After the [Copilot Studio lab](./01-copilot-studio.md), work through the [SDK requirements](./00-prerequisites.md) before you start. In short, you need the .NET 10 SDK, the Agent 365 CLI, an Azure OpenAI resource, a tenant with Agent 365 enabled and at least one Agent 365 licence in it, and access to an administrator who can grant consent twice.
+After the [Copilot Studio lab](./01-copilot-studio.md), work through the [SDK requirements](./00-prerequisites.md) before you start. In short, you need the .NET 10 SDK, the Agent 365 CLI, an Azure OpenAI resource, a tenant with Agent 365 enabled and at least one Agent 365 license in it and a user with administrator account. This lab is based on the usage of coding agents, so you'll need Visual Studio Code with GitHub Copilot or the GitHub Copilot app, plus an account with a GitHub Copilot subscription and AI credits to spend.
 
 The starting point for this lab is the local .NET sample agent. If you already cloned this repository during the SDK requirements, open `samples/dotnet` in that checkout; otherwise:
 
@@ -47,7 +47,7 @@ It is a research assistant that answers questions about Microsoft products by se
 
 From Exercise 3 onwards, most steps follow the same structure:
 
-1. **What you type**, the prompt you give your coding assistant.
+1. **What you type**, the prompt you give your coding assistant, like the chat panel in Visual Studio Code or the GitHub Copilot app.
 2. **What the skill does**, the changes it makes.
 3. **Behind the scenes**, the CLI command or code involved.
 4. **How to verify**, how to confirm it worked before moving on.
@@ -196,6 +196,7 @@ dotnet user-secrets set "AzureAd:ClientSecret" "<sign-in client secret>"
 ```
 
 The `Agent365Observability` section is where the Agent 365 tooling and instrumentation look for the blueprint id. Exercise 3 fills it in.
+The code in the next steps is included as a reference, so that you can understand what happens behind the scenes to support authentication. You don't actually need to write it yourself, it's already included in the provided sample.
 
 ### Step 4: See how the app decides whether to sign anybody in
 

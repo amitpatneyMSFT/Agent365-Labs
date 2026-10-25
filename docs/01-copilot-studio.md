@@ -71,8 +71,8 @@ Ask your security administrator to complete this [Defender onboarding](https://l
 4. Select the **Microsoft 365 connector** step.
 5. On **Select Microsoft 365 components**, select **Microsoft Entra ID Management events** and **Microsoft 365 activities**.
 6. Keep **Microsoft Entra Users and groups** selected. It is selected by default and is a monitoring prerequisite. Leave any other selected components unchanged.
-7. Select **Connect Microsoft 365** and complete the wizard. 
-8. Return to **Security for AI** > **Get started** and confirm **Microsoft 365 connector** is in **Pending connection** status. 
+7. Select **Connect Microsoft 365** and complete the wizard.
+8. Return to **Security for AI** > **Get started** and confirm **Microsoft 365 connector** is in **Pending connection** status.
 9. Return to **Setup & Configuration** > **Settings** and, this time, go to **Cloud apps** and choose **App Connectors**. You should see the Microsoft 365 connector available.
 10. Click on the value in the **Status** column and, under **Last health check**, click **Test now**. This will force the sync of the connector.
 11. It will take a while now for the integration to be completed, but in the meantime you can continue the rest of the lab.
@@ -89,7 +89,7 @@ We are leaving this steps for your own knowledge, but we won't need to follow th
 
 **B. Prepare the integration app**
 
-You need permission to register an application and manage its federated credentials. An **Application Developer** can register an app; its owner or an administrator with appropriate application-management permissions can configure the credential. 
+You need permission to register an application and manage its federated credentials. An **Application Developer** can register an app; its owner or an administrator with appropriate application-management permissions can configure the credential.
 You will use these values during setup:
 
 | Value | Where it is used |
@@ -140,7 +140,7 @@ Use the integration app's **Application (client) ID** for the integration App ID
 
 The configuration applies only to the selected environment. It is not automatically enabled in other or newly created environments.
 
-**D. Defender administrator: finish the connection**
+**Defender administrator: finish the connection**
 
 1. Return to **Copilot Studio real-time protection** in Defender.
 2. In **App ID**, enter the **same integration Application (client) ID** saved in Power Platform.
@@ -301,7 +301,6 @@ I'm looking for step-by-step guidance on adding an MCP server in Copilot Studio.
 
 Confirm that the Preview activity trace shows a successful `microsoft_docs_search` call and record the time of that turn. Defender may show the channel as `Copilot Studio Test Pane`.
 
-
 ## Exercise 4: Check Activity in the Microsoft 365 admin center
 
 ### Step 3: Open the agent and its Activity view
@@ -311,7 +310,7 @@ Confirm that the Preview activity trace shows a successful `microsoft_docs_searc
 3. You should see the agent at the top
 4. Open the agent details.
 5. Open **Activity** if the tab is present.
-6. Set the date range to cover the authenticated Preview test. The default view covers the last 30 days.
+6. You should see a session executed by your user in the tenant.
 
 ### Step 2: Interpret the surface correctly
 

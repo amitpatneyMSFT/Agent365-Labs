@@ -87,7 +87,7 @@ The deployment setting must match your Azure deployment name.
 
 The sample supports two authentication methods. If an API key is configured, it uses key auth; otherwise it uses Entra credentials. The presence or absence of the key is the switch.
 
-|  | **Path A: Entra credentials** *(recommended)* | **Path B: API key** |
+| | **Path A: Entra credentials** *(recommended)* | **Path B: API key** |
 | --- | --- | --- |
 | What it uses | `DefaultAzureCredential`, so your `az login` session locally and a managed identity once hosted on Azure | A resource key, sent as a bearer secret |
 | What you configure | Nothing beyond Step 1, you just need to be signed in | The key itself, kept in a secret store |
@@ -138,7 +138,7 @@ The OBO path attributes everything the agent does to the signed-in user. One pie
 
 ### Step 1: Create the app registration that signs users in
 
-1. Go to the [Entra admin center](https://entra.microsoft.com) and navigate to **Identity**, then **Applications**, then **App registrations**.
+1. Go to the [Entra admin center](https://entra.microsoft.com) and navigate to **App registrations**.
 2. Select **New registration**.
 3. Give it a descriptive name, for example `my-agent-web-signin`. Exercise 3 adds two more identities for this agent.
 4. For **Supported account types**, choose **Accounts in this organizational directory only (Single tenant)**.
@@ -189,17 +189,13 @@ The `AzureAd` and `Agent365Observability` sections are already in `appsettings.j
 }
 ```
 
-Fill in `TenantId` and `ClientId` from the **Overview** blade in Step 1. Leave `AgentBlueprintId` blank for now; it gets its value in Exercise 3. Leave `ClientSecret` empty in the file (it is committed) and store the secret separately:
+Fill in `TenantId` and `ClientId` from the **Overview** blade in Step 1. Leave `AgentBlueprintId` blank for now; it gets its value in Exercise 3. Leave `ClientSecret` empty in the file (it is committed) and store the secret from Step 2 separately:
 
 ```bash
 dotnet user-secrets set "AzureAd:ClientSecret" "<sign-in client secret>"
 ```
 
-`CallbackPath` must match the redirect URI you registered. `Microsoft.Identity.Web` builds the callback address from the app's base URL plus this path. A mismatch produces the `AADSTS50011` described above.
-
 The `Agent365Observability` section is where the Agent 365 tooling and instrumentation look for the blueprint id. Exercise 3 fills it in.
-
-The scope `api://<blueprint-id>/access_agent_as_user` is built from the blueprint id. It must be identical in the sign-in request, the token acquisition, and any debugging tool. The sample derives it in one place from the blueprint id to avoid mismatches.
 
 ### Step 4: See how the app decides whether to sign anybody in
 
@@ -351,6 +347,10 @@ The `a365-setup` skill runs first. It checks the prerequisites, offers to instal
 
 Once you have answered, `a365-setup` hands off to `make-a365-agent`, which performs the actual registration.
 
+The coding agent might ask you which Agent 365 capabilities you want to support. For the moment, just pick **Register**.
+
+During the process, you will be asked also a few times to authenticate with the proper account to create the Blueprint and the Identity. Make sure to use an account on your tenant with administrator permissions.
+
 **Behind the scenes**
 
 ```bash
@@ -432,13 +432,15 @@ az ad app permission admin-consent --id <sign-in client app id>
 
 ### Step 4: Give the app the blueprint id
 
-Take `agentBlueprintId` from `a365.generated.config.json` and put it in `appsettings.json`:
+If it is not already filled, take `agentBlueprintId` from `a365.generated.config.json` and put it in `appsettings.json`:
 
 ```json
 "Agent365Observability": {
   "AgentBlueprintId": "<blueprint app id>"
 }
 ```
+
+Keep `agentBlueprintClientSecret` out of this committed file. Store it separately using the `Agent365:BlueprintClientSecret` user-secret setting described in Step 1.
 
 This value does two things:
 
@@ -467,6 +469,15 @@ Paste it into [jwt.ms](https://jwt.ms) (decodes in the browser, sends nothing ex
 If `aud` is the sign-in client or Microsoft Graph, the scope was not requested correctly. The usual cause is a stale or incorrect blueprint id that builds a scope pointing at a different resource.
 
 Note the `oid` value. Exercise 4, Step 7 uses it.
+
+You can test the agent by executing again in the terminal:
+
+```bash
+dotnet run
+```
+
+If everything goes well, this time, when you open the browser on the URL `http://localhost:5140/`, you should be asked first to sign in using an account from your tenant. Once the web application is loaded, you will see the signed in user in the left panel and you will be able to chat normally.
+However, this time, the messages you send will be tied to your user.
 
 > ✅ **Checkpoint.** This is a good place to stop if you need to. The agent is registered and governed, it shows up in your tenant, and users sign in to it with a token addressed to the blueprint. It does not emit any telemetry yet.
 
@@ -840,6 +851,6 @@ With Copilot Studio, the SDK requirements, and this .NET lab complete, you have 
 | Sample prompts | [99-sample-prompts.md](./99-sample-prompts.md) |
 | Optional: the same lab in Python | [02b-web-obo-python.md](./02b-web-obo-python.md) |
 | Optional: the same lab in JavaScript / Node.js | [02c-web-obo-nodejs.md](./02c-web-obo-nodejs.md) |
-| Agent on-behalf-of OAuth flow | https://learn.microsoft.com/entra/agent-id/agent-on-behalf-of-oauth-flow |
-| Agent 365 observability concepts | https://learn.microsoft.com/microsoft-agent-365/developer/observability-concepts |
-| Agent 365 Skills | https://github.com/microsoft/agent365-skills |
+| Agent on-behalf-of OAuth flow | <https://learn.microsoft.com/entra/agent-id/agent-on-behalf-of-oauth-flow> |
+| Agent 365 observability concepts | <https://learn.microsoft.com/microsoft-agent-365/developer/observability-concepts> |
+| Agent 365 Skills | <https://github.com/microsoft/agent365-skills> |

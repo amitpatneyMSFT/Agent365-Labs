@@ -72,7 +72,10 @@ Ask your security administrator to complete this [Defender onboarding](https://l
 5. On **Select Microsoft 365 components**, select **Microsoft Entra ID Management events** and **Microsoft 365 activities**.
 6. Keep **Microsoft Entra Users and groups** selected. It is selected by default and is a monitoring prerequisite. Leave any other selected components unchanged.
 7. Select **Connect Microsoft 365** and complete the wizard. 
-8. Return to **Security for AI** > **Get started** and confirm **Microsoft 365 connector** is in **Pending connection** status. It will take a while, but in the meantime we can move on with the rest of the lab.
+8. Return to **Security for AI** > **Get started** and confirm **Microsoft 365 connector** is in **Pending connection** status. 
+9. Return to **Setup & Configuration** > **Settings** and, this time, go to **Cloud apps** and choose **App Connectors**. You should see the Microsoft 365 connector available.
+10. Click on the value in the **Status** column and, under **Last health check**, click **Test now**. This will force the sync of the connector.
+11. It will take a while now for the integration to be completed, but in the meantime you can continue the rest of the lab.
 
 ### Copilot Studio real-time protection
 

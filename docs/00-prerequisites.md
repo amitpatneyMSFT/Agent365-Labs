@@ -24,7 +24,63 @@ Every SDK lab in this repository requires the same three things: tools on your m
 
 > The Agent 365 CLI requires .NET 8.0 or later, even if your agent is written in Python or TypeScript. It is distributed as a .NET global tool; the main .NET lab targets .NET 10 and requires the .NET 10 SDK. These requirements are for the **SDK labs** only; Lab A365-01 does not use the CLI.
 
-### Install or update the Agent 365 CLI
+### Automated Windows installation
+
+The installer is included in this repository at `docs/scripts/Install-SdkRequirements.ps1`. You can share the script itself or this page with participants; they do not need Git or a clone of the repository to download it.
+
+It runs in Windows PowerShell 5.1 or PowerShell 7 and uses WinGet to install missing tools. WinGet (App Installer) must already be available through your organization's approved software channel. Installers may request administrator approval.
+
+**Download the script**
+
+1. Right-click [Download Install-SdkRequirements.ps1](./scripts/Install-SdkRequirements.ps1) and choose **Save link as** (the wording may vary by browser).
+2. Save it in your **Downloads** folder with the name `Install-SdkRequirements.ps1`, not `Install-SdkRequirements.ps1.txt`. If the link opens the script as text, use your browser's **Save as** command.
+3. Review the script in a text editor before running it.
+
+Alternatively, open PowerShell and download it from the repository:
+
+```powershell
+Set-Location (Join-Path $HOME 'Downloads')
+Invoke-WebRequest `
+    -Uri 'https://raw.githubusercontent.com/microsoft/agent365-labs/main/docs/scripts/Install-SdkRequirements.ps1' `
+    -OutFile '.\Install-SdkRequirements.ps1'
+```
+
+**Run the installer**
+
+Open Windows PowerShell or PowerShell 7, switch to the download folder, and preview the changes:
+
+```powershell
+Set-Location (Join-Path $HOME 'Downloads')
+.\Install-SdkRequirements.ps1 -WhatIf
+```
+
+Then run the installer for the labs you plan to take:
+
+```powershell
+# Main .NET lab only.
+.\Install-SdkRequirements.ps1
+
+# Main lab plus the optional Python lab.
+.\Install-SdkRequirements.ps1 -IncludePython
+
+# Main lab plus the optional JavaScript / Node.js lab.
+.\Install-SdkRequirements.ps1 -IncludeNode
+
+# Main lab and both optional labs.
+.\Install-SdkRequirements.ps1 -IncludePython -IncludeNode
+```
+
+Run only the command that matches your chosen labs. If you already cloned the repository, you can skip the download and run `.\docs\scripts\Install-SdkRequirements.ps1` from the repository root with the same switches.
+
+The script installs .NET SDK 10 for all participants, which also satisfies the Agent 365 CLI requirement. Existing tools that meet the minimum version are left in place; the Agent 365 CLI is installed or updated, and the Az module is installed for the current user in PowerShell 7 if missing. For tools listed as "latest" above, use your organization's normal update process to keep existing installations current.
+
+The script uses the machine's configured WinGet sources, NuGet feeds, and PowerShell repositories. It does not add public feeds, accept source or package agreements automatically, change repository trust, or bypass execution policy. Review any required agreements or trust decisions through your approved setup process before running it. If a package is unavailable or script execution is blocked, ask your administrator for an approved resolution. A failed installation stops the script with an error; rerun it after resolving the cause. Open a new PowerShell 7 terminal afterward.
+
+When the script reports **SDK tools are ready**, close the terminal and open **PowerShell 7** to continue the lab with the updated `PATH`.
+
+This installs **local SDK tools only**. Install the Agent 365 Skills separately for your chosen assistant below. Tenant licences, permissions, Azure sign-in, sample cloning, and Azure OpenAI setup still require the steps on this page.
+
+### Install or update the Agent 365 CLI manually
 
 Install the **`Microsoft.Agents.A365.DevTools.Cli`** package to use the `a365` command. See [Install and use the Agent 365 CLI](https://learn.microsoft.com/microsoft-agent-365/developer/agent-365-cli?tabs=windows) for the CLI reference.
 

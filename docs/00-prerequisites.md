@@ -120,17 +120,124 @@ Confirm the tool list contains `Microsoft.Agents.A365.DevTools.Cli` and that `a3
 
 ## Installing the Agent 365 Skills
 
-Most of the Agent 365 work in the **SDK labs** is done by asking an AI coding assistant to do it, using the [Agent 365 Skills](https://github.com/microsoft/agent365-skills). The skills work with every major assistant, and each one installs them differently. Pick the row that matches the tool you use:
+Most of the Agent 365 work in the **SDK labs** is done by asking an AI coding assistant to do it, using the [Agent 365 Skills](https://github.com/microsoft/agent365-skills). The `agent365` plugin bundles these skills, including `a365-setup`, `instrument-observability`, and `add-workiq-tools`.
 
-| Your assistant | How to install |
-| --- | --- |
-| Claude Code (app, web or CLI) | Run `/plugin marketplace add https://github.com/microsoft/agent365-skills` inside a session, then `/plugin install agent365@agent365-skills` |
-| GitHub Copilot CLI, VS Code agent mode | `gh skill add microsoft/agent365-skills` |
-| Cursor, Windsurf, Codex CLI, Gemini CLI, or anything else that reads `.agents/skills/` | `node /path/to/agent365-skills/scripts/install.js`, run from your agent project directory |
+**Choose exactly one of the three options below. You do not need to complete all three.** Use Option 1 to install the skills manually through the GitHub CLI, Option 2 to install the plugin in VS Code, or Option 3 to install the plugin in the GitHub Copilot app. Options 2 and 3 do **not** require the GitHub CLI.
 
-Run the install from **your agent's project folder**, so the skills can see the code they are meant to change.
+Review the skills and plugin contents before installing, because they can guide your assistant to run commands on your machine. If your organization restricts plugins or marketplaces, ask your administrator to approve the source. For Claude Code, Cursor, Windsurf, Codex CLI, Gemini CLI, or another assistant, follow the [upstream installation instructions](https://github.com/microsoft/agent365-skills#getting-started) instead.
 
 > Lab A365-01 does not use these coding-assistant skills. It uses a native skill created inside the Copilot Studio browser authoring experience.
+
+### Option 1: Install the GitHub CLI and add the skills manually
+
+This option installs the skills directly for GitHub Copilot, rather than installing the bundled plugin through a graphical interface. The GitHub CLI (`gh`) is separate from Git and from the GitHub Copilot CLI. The automated SDK tools installer above does not install it.
+
+1. Open PowerShell and install the GitHub CLI using your configured WinGet sources:
+
+   ```powershell
+   winget install --id GitHub.cli --exact
+   ```
+
+2. Open a **new terminal**, verify the installation, and sign in to GitHub. Skip `gh auth login` if `gh auth status` confirms that you are already signed in with the intended account.
+
+   ```powershell
+   gh --version
+   gh auth status
+   gh auth login
+   ```
+
+3. Check that your GitHub CLI supports skill installation:
+
+   ```powershell
+   gh skill install --help
+   ```
+
+   Skill management is a preview feature. If the command is unavailable, update the GitHub CLI through your organization's approved software channel, or choose Option 2 or 3 instead. See the [GitHub CLI installation guide](https://github.com/cli/cli#installation) for other operating systems and installation methods.
+
+4. Open a terminal in **your agent's project folder** and install the Agent 365 skills:
+
+   ```powershell
+   gh skill install microsoft/agent365-skills --all --agent github-copilot --scope project
+   ```
+
+   `gh skill add` is an alias for `gh skill install`. The explicit `--all` installs every discovered skill, and `--scope project` places them in the repository's `.agents/skills/` directory. Run this from the checkout you will use for the lab.
+
+5. Verify the installation:
+
+   ```powershell
+   gh skill list --agent github-copilot --scope project
+   ```
+
+   Confirm that the list includes `a365-setup` and `instrument-observability`. Open that same project in your coding assistant and start a new session before continuing.
+
+See the [GitHub CLI skill installation reference](https://cli.github.com/manual/gh_skill_install) for details.
+
+### Option 2: Install the plugin in VS Code
+
+Use this option if you will complete the lab in VS Code with GitHub Copilot. No `gh` commands are needed.
+
+**Install VS Code and sign in to Copilot**
+
+If VS Code and Copilot are already set up, skip to the plugin steps below.
+
+1. Open the [VS Code download page](https://code.visualstudio.com/download) and select the installer for your operating system and processor. On Windows, choose **User Installer** to install for your account without administrator permissions, unless your organization requires a different installation method.
+2. Run the downloaded installer and follow its prompts, then launch **Visual Studio Code** from the Start menu. If your organization manages software installation, use its approved software channel instead. See [Installing VS Code on Windows](https://code.visualstudio.com/docs/setup/windows) for details.
+3. In VS Code, open the Copilot menu in the Status Bar and select **Use AI Features** or **Sign in to use Copilot**. Follow the browser sign-in prompts using the GitHub account with your Copilot subscription or organization-provided access. Confirm that you can open Copilot Chat before continuing. See [Set up GitHub Copilot in VS Code](https://code.visualstudio.com/docs/setup/copilot) if sign-in or setup is unavailable.
+
+Installing the separate GitHub Copilot CLI is not required for this option, even if the VS Code installer offers it.
+
+**Install the Agent 365 plugin**
+
+1. Open your agent's project folder in VS Code.
+2. Open the Command Palette with **Ctrl+Shift+P**, run **Preferences: Open User Settings (JSON)**, and add the Agent 365 marketplace:
+
+   ```json
+   "chat.plugins.marketplaces": [
+       "microsoft/agent365-skills"
+   ]
+   ```
+
+   This is an entry inside your existing `settings.json` object, not a replacement for the whole file. If `chat.plugins.marketplaces` already exists, append `"microsoft/agent365-skills"` to its array and preserve the other entries.
+
+3. Ensure the **Chat: Plugins: Enabled** setting (`chat.plugins.enabled`) is enabled.
+4. Open **Extensions** with **Ctrl+Shift+X** and search for `@agentPlugins`.
+5. Find **agent365** from the **agent365-skills** marketplace, review its contents, and select **Install**. Review and confirm the marketplace trust prompt if one appears.
+6. In Copilot Chat, select **Open Customizations**, then **Skills**. Confirm that skills such as `a365-setup` and `instrument-observability` are available.
+7. Start a new Copilot Chat session for the lab.
+
+If these plugin controls are unavailable, update VS Code through your approved software channel or use Option 1. See [Agent plugins in VS Code](https://code.visualstudio.com/docs/agent-customization/agent-plugins) for the current interface and settings.
+
+### Option 3: Install the plugin in the GitHub Copilot app
+
+Use this option if you will complete the lab in the GitHub Copilot desktop app. No GitHub CLI or VS Code installation is needed for this route.
+
+**Install the GitHub Copilot app and sign in**
+
+If the app is already installed and you are signed in, skip to the plugin steps below. This is the **GitHub Copilot app**, not GitHub Desktop or the GitHub Copilot CLI.
+
+1. Ensure **Git** is installed (`git --version`). The automated SDK tools installer above includes it.
+2. Open the [official GitHub Copilot app download page](https://github.com/features/ai/github-app) and download the installer for your operating system and processor. Use your organization's approved software channel instead if it manages application installation.
+3. Run the downloaded installer and follow its prompts, then launch the GitHub Copilot app.
+4. Select **Sign in to GitHub** and complete the browser sign-in using your Copilot-enabled account. Complete onboarding; you can add your agent's local project folder now or after installing the plugin. For organization-provided Copilot access, your administrator must allow use of the GitHub Copilot app.
+
+See [Getting started with the GitHub Copilot app](https://docs.github.com/en/copilot/get-started/quickstart-copilot-app) for installation, account requirements, and connecting a local folder.
+
+**Install the Agent 365 plugin**
+
+1. Open the GitHub Copilot app.
+2. Open **Customize**, then **Plugins**.
+3. Select **Add marketplace** (it may be under **Install**, depending on your app version).
+4. Enter the marketplace repository:
+
+   ```text
+   https://github.com/microsoft/agent365-skills
+   ```
+
+5. Review the source and confirm adding the marketplace. Expand **agent365-skills**, then select **Install** next to **agent365**. Adding the marketplace alone does not install the plugin.
+6. Confirm that **agent365** is installed and enabled. In **Customize**, check **Skills** for entries such as `a365-setup` and `instrument-observability`.
+7. Open your agent's project in the app and start a new session for the lab.
+
+Use the app's plugin interface for installation; do not enter terminal commands such as `gh skill install` into the chat composer. See [Plugins for GitHub Copilot](https://docs.github.com/en/copilot/concepts/customizations/plugins) for supported clients and installation options.
 
 ## The licences your tenant needs for the SDK labs
 

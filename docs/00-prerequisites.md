@@ -176,7 +176,19 @@ See the [GitHub CLI skill installation reference](https://cli.github.com/manual/
 
 Use this option if you will complete the lab in VS Code with GitHub Copilot. No `gh` commands are needed.
 
-1. Open VS Code with GitHub Copilot available and signed in.
+**Install VS Code and sign in to Copilot**
+
+If VS Code and Copilot are already set up, skip to the plugin steps below.
+
+1. Open the [VS Code download page](https://code.visualstudio.com/download) and select the installer for your operating system and processor. On Windows, choose **User Installer** to install for your account without administrator permissions, unless your organization requires a different installation method.
+2. Run the downloaded installer and follow its prompts, then launch **Visual Studio Code** from the Start menu. If your organization manages software installation, use its approved software channel instead. See [Installing VS Code on Windows](https://code.visualstudio.com/docs/setup/windows) for details.
+3. In VS Code, open the Copilot menu in the Status Bar and select **Use AI Features** or **Sign in to use Copilot**. Follow the browser sign-in prompts using the GitHub account with your Copilot subscription or organization-provided access. Confirm that you can open Copilot Chat before continuing. See [Set up GitHub Copilot in VS Code](https://code.visualstudio.com/docs/setup/copilot) if sign-in or setup is unavailable.
+
+Installing the separate GitHub Copilot CLI is not required for this option, even if the VS Code installer offers it.
+
+**Install the Agent 365 plugin**
+
+1. Open your agent's project folder in VS Code.
 2. Open the Command Palette with **Ctrl+Shift+P**, run **Preferences: Open User Settings (JSON)**, and add the Agent 365 marketplace:
 
    ```json
@@ -191,7 +203,7 @@ Use this option if you will complete the lab in VS Code with GitHub Copilot. No 
 4. Open **Extensions** with **Ctrl+Shift+X** and search for `@agentPlugins`.
 5. Find **agent365** from the **agent365-skills** marketplace, review its contents, and select **Install**. Review and confirm the marketplace trust prompt if one appears.
 6. In Copilot Chat, select **Open Customizations**, then **Skills**. Confirm that skills such as `a365-setup` and `instrument-observability` are available.
-7. Open your agent's project folder and start a new Copilot Chat session for the lab.
+7. Start a new Copilot Chat session for the lab.
 
 If these plugin controls are unavailable, update VS Code through your approved software channel or use Option 1. See [Agent plugins in VS Code](https://code.visualstudio.com/docs/agent-customization/agent-plugins) for the current interface and settings.
 
@@ -199,7 +211,20 @@ If these plugin controls are unavailable, update VS Code through your approved s
 
 Use this option if you will complete the lab in the GitHub Copilot desktop app. No GitHub CLI or VS Code installation is needed for this route.
 
-1. Open the GitHub Copilot app and sign in with your Copilot-enabled account.
+**Install the GitHub Copilot app and sign in**
+
+If the app is already installed and you are signed in, skip to the plugin steps below. This is the **GitHub Copilot app**, not GitHub Desktop or the GitHub Copilot CLI.
+
+1. Ensure **Git** is installed (`git --version`). The automated SDK tools installer above includes it.
+2. Open the [official GitHub Copilot app download page](https://github.com/features/ai/github-app) and download the installer for your operating system and processor. Use your organization's approved software channel instead if it manages application installation.
+3. Run the downloaded installer and follow its prompts, then launch the GitHub Copilot app.
+4. Select **Sign in to GitHub** and complete the browser sign-in using your Copilot-enabled account. Complete onboarding; you can add your agent's local project folder now or after installing the plugin. For organization-provided Copilot access, your administrator must allow use of the GitHub Copilot app.
+
+See [Getting started with the GitHub Copilot app](https://docs.github.com/en/copilot/get-started/quickstart-copilot-app) for installation, account requirements, and connecting a local folder.
+
+**Install the Agent 365 plugin**
+
+1. Open the GitHub Copilot app.
 2. Open **Customize**, then **Plugins**.
 3. Select **Add marketplace** (it may be under **Install**, depending on your app version).
 4. Enter the marketplace repository:
